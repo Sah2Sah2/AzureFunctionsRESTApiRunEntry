@@ -4,34 +4,42 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using RESTApiAzureFunctions.Models;
 using System.Text.Json;
+using System.IO;
+using System.Threading.Tasks;
+using RESTApiAzureFunctions.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace RESTApiAzureFunctions
 {
     public class Function1
     {
         private readonly ILogger<Function1> _logger;
+        private readonly RunDbContext _db;  // Add db
 
-        public Function1(ILogger<Function1> logger)
+        // Inject RunDbContext via constructor
+        public Function1(ILogger<Function1> logger, RunDbContext db)
         {
             _logger = logger;
+            _db = db;   // Assign DbContext
         }
 
         [Function("Function1")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "runs")] HttpRequest Req)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "runs")] HttpRequest req)
         {
             _logger.LogInformation("HTTP trigger function processed a request.");
 
-            if (Req.Method == HttpMethods.Get)
+            if (req.Method == HttpMethods.Get)
             {
-                return new ObjectResult(RunDataStore.Runs);
+                var runs = await _db.Runs.ToListAsync();
+                return new OkObjectResult(runs);
             }
-            else if (Req.Method == HttpMethods.Post)
+            else if (req.Method == HttpMethods.Post)
             {
-                // Read the req body
-                string requestBody = await new StreamReader(Req.Body).ReadToEndAsync();
+                // Read the request body
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-                // Desrialize JSON 
+                // Deserialize JSON 
                 var newRun = JsonSerializer.Deserialize<RunEntry>(requestBody, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -43,11 +51,13 @@ namespace RESTApiAzureFunctions
                 // Create a unique ID 
                 newRun.Id = Guid.NewGuid().ToString();
 
-                // Add to the momentary list
-                RunDataStore.Runs.Add(newRun);
+                // Save to DB
+                _db.Runs.Add(newRun);
+                await _db.SaveChangesAsync();
 
                 return new OkObjectResult(newRun);
             }
+
             return new BadRequestResult();
         }
     }
