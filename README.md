@@ -1,5 +1,9 @@
 # REST Api with Azure Functions
 
+![.NET](https://img.shields.io/badge/.NET-8.0-blue)
+![Azure Functions](https://img.shields.io/badge/Azure--Functions-Isolated%20Worker-blue)
+![EF Core](https://img.shields.io/badge/EF--Core-SQL%20Server-blue)
+
 ## Overview
 
 This repository contains a project for the *Design Cloud Solutions* course in the .NET Cloud Developer program at *IT-Högskolan*. 
@@ -31,10 +35,11 @@ The function itself is also deployed and running in Azure. Built with .NET 8 and
 
 ### Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download)
-- [Azure Functions Core Tools v4](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local#v2)
-- SQL Server instance (local or Azure SQL)
-- Visual Studio or VS Code
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download);
+- [Azure Functions Core Tools v4](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local#v2);
+- SQL Server instance (local or Azure SQL);
+- Visual Studio or VS Code;
+- Azure account (for deploying and testing the function in the cloud).
 
 ### Configuration
 
@@ -43,7 +48,7 @@ The function itself is also deployed and running in Azure. Built with .NET 8 and
 
 ## Example Requests
 
-Below is a summary of the available API endpoints, followed by example requests to help you get started.
+Below is a summary of the available API endpoints and how to call them either locally during development or on the deployed Azure Function
 
 | HTTP Method | Endpoint      | Description                  |
 |-------------|---------------|------------------------------|
@@ -53,7 +58,12 @@ Below is a summary of the available API endpoints, followed by example requests 
 ---
 
 - **GET all runs**
-  `GET http://localhost:{port}/api/runs`
+
+  - Locally (during development): `GET http://localhost:{port}/api/runs`
+  
+  or
+  
+  - Deployed Azure Function: `GET https://sararunning.azurewebsites.net/api/runs?code=FUNCTION_KEY`
 
 - **POST new run**  
   *Request Body Example:*
@@ -73,6 +83,8 @@ Below is a summary of the available API endpoints, followed by example requests 
 - The function generates a new unique ID for each run on POST;
 - Make sure `appsettings.json` or `local.settings.json` contains the correct connection string;
 - The project uses dependency injection to inject the database context.
+- The `FUNCTION_KEY` in the URL is your Azure Function key used for authentication. You can find it in the Azure Portal under your Function App → Functions → (your function) → "Get Function URL".
+- ⚠️ This project was deployed to Azure Functions as part of a school assignment. The deployed version might no longer be available due to cost constraints.
 
   
 
